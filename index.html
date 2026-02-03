@@ -256,9 +256,14 @@
             const slugs = params.get('slugs');
             
             if (slugs) {
-                projectConfigs = slugs.split(',').map(slug => ({ slug: slug.trim() }));
-            } else {
-                // Default project if none specified
+                projectConfigs = slugs.split(',')
+                    .map(slug => slug.trim())
+                    .filter(slug => slug.length > 0)
+                    .map(slug => ({ slug: slug }));
+            }
+            
+            // Default project if none specified or all were invalid
+            if (projectConfigs.length === 0) {
                 projectConfigs = [{ slug: "test" }];
             }
         }
