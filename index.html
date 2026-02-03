@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Album Catch-up Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #1a1a1a;
+            --accent: #2ecc71;
+            --spotify: #1DB954;
+            --apple: #fc3c44;
+            --ytm: #ff0000;
+            --muted: #65676b;
+            --highlight: #fff9c4;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-main);
+        }
+
+        .container { max-width: 1600px; margin: 0 auto; }
+
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { margin-bottom: 10px; font-weight: 800; }
+
+        .random-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+        .random-btn:hover { transform: scale(1.05); background-color: #2980b9; }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+
+        .project-column {
+            background: #e4e6eb;
+            border-radius: 16px;
+            padding: 16px;
+            min-height: 200px;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        .header-text-group { display: flex; flex-direction: column; }
+
+        .project-title { font-size: 1.1rem; font-weight: 700; margin: 0; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .project-header a {
+            text-decoration: none;
+            color: inherit;
+        }
+        .project-header a:hover {
+            text-decoration: underline;
+        }
+
+        /* Last Updated Styling */
+        .last-updated { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+
+        .count-badge {
+            background: var(--text-main);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .album-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .album-card {
+            display: flex;
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .album-card.is-selected {
+            background-color: var(--highlight);
+            border-color: #f1c40f;
+            transform: scale(1.03);
+            z-index: 10;
+        }
+
+        .album-art { width: 60px; height: 60px; border-radius: 6px; margin-right: 12px; object-fit: cover; }
+        .album-info { flex-grow: 1; min-width: 0; }
+        .album-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .album-artist { color: var(--muted); font-size: 0.8rem; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .links { display: flex; gap: 5px; }
+        .links a {
+            text-decoration: none;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 3px 6px;
+            border-radius: 4px;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        .btn-spotify { background-color: var(--spotify); }
+        .btn-apple { background-color: var(--apple); }
+        .btn-ytm { background-color: var(--ytm); }
+        .btn-wikipedia { background-color: #000000; /* Black for Wikipedia */ }
+
+        .rate-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.75rem;
+            margin-left: 8px;
+            align-self: center;
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 24px; height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Music Review HQ</h1>
+            <button class="random-btn" onclick="pickRandomAlbum()">🎲 Pick a Random Album</button>
+        </header>
+
+        <div class="dashboard" id="dashboard-root"></div>
+    </div>
+
+    <script>
+        // TODO: allow the visitor to enter their own slug combinations. This will automatically populate URL query parameters
+        // and it will support multiple slugs. Form elements will need to be added to manage adding projects, and each project
+        // should now have a remove button somewhere that allows a visitor to remove it from their config.
+        const projectConfigs = { slug: "test" };
+
+        let allUnratedAlbums = [];
+
+        function init() {
+            const root = document.getElementById('dashboard-root');
+            root.innerHTML = '';
+
+            projectConfigs.forEach((config, index) => {
+                config.name = config.slug;
+                const projectId = `proj-${index}`;
+                const col = document.createElement('div');
+                col.className = 'project-column';
+                col.id = projectId;
+                col.innerHTML = `
+                    <div class="project-header">
+                        <div class="header-text-group">
+                            <a href="https://1001albumsgenerator.com/${config.slug}/history" target="_blank" title="${config.name}">
+                                <h2 class="project-title">${config.name}</h2>
+                            </a>
+                            <span class="last-updated" id="updated-${projectId}">Syncing...</span>
+                        </div>
+                        <span class="count-badge" id="count-${projectId}">--</span>
+                    </div>
+                    <div class="album-list" id="list-${projectId}">
+                        <div class="loader"></div>
+                    </div>
+                `;
+                root.appendChild(col);
+                fetchProjectData(config.slug, projectId);
+            });
+        }
+
+        async function fetchProjectData(slug, elementId) {
+            const listContainer = document.getElementById(`list-${elementId}`);
+            const countBadge = document.getElementById(`count-${elementId}`);
+            const updateLabel = document.getElementById(`updated-${elementId}`);
+
+            try {
+                const response = await fetch(`https://1001albumsgenerator.com/api/v1/projects/${slug}`);
+                if (!response.ok) throw new Error('Invalid Slug');
+
+                const data = await response.json();
+                console.log(`[${slug}] Total history items received from API:`, data.history.length);
+
+                const allAlbums = [...data.history];
+                if (data.currentAlbum && !data.history.some(h => h.album.uuid === data.currentAlbum.uuid)) {
+                    allAlbums.unshift({
+                        album: data.currentAlbum,
+                        rating: null,
+                        uuid: null, // No history ID for the current album yet
+                    });
+                }
+
+                const unrated = allAlbums.filter(item => !item.rating);
+                console.log(`[${slug}] Found ${unrated.length} unrated albums to display.`);
+
+                unrated.forEach(item => {
+                    allUnratedAlbums.push({ ...item, projectSlug: slug, elementId: elementId });
+                });
+
+                countBadge.innerText = `${unrated.length} Left`;
+                updateLabel.innerText = `Updated: ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+                if (unrated.length === 0) {
+                    listContainer.innerHTML = "<p style='text-align:center; font-size:0.8rem;'>✅ All Caught Up!</p>";
+                    return;
+                }
+
+                listContainer.innerHTML = unrated.map(item => {
+                    try {
+                        const album = item.album;
+                        if (!album) {
+                            console.warn(`[${slug}] Skipping item with no album data:`, item);
+                            return '';
+                        }
+
+                        const searchTerm = encodeURIComponent(`${album.name} ${album.artist}`);
+                        const appleSearchLink = `https://music.apple.com/us/search?term=${searchTerm}`;
+                        const ytmLink = album.youtubeMusicId
+                            ? `https://music.youtube.com/playlist?list=${album.youtubeMusicId}`
+                            : `https://music.youtube.com/search?q=${searchTerm}`;
+                        const spotifyLink = album.spotifyId
+                            ? `https://open.spotify.com/album/${album.spotifyId}`
+                            : `https://open.spotify.com/search/${searchTerm}`;
+                        const appleLink = album.appleMusicId
+                            ? `https://music.apple.com/us/album/id${album.appleMusicId}`
+                            : album.appleMusicLink || appleSearchLink;
+
+                        let rateLink;
+                        if (item.uuid) {
+                             rateLink = `https://1001albumsgenerator.com/${slug}/history#project-history--album-row-${item.uuid}-${album.uuid}`;
+                        } else {
+                            rateLink = `https://1001albumsgenerator.com/${slug}/history`;
+                        }
+
+                        return `
+                            <div class="album-card" id="${elementId}-album-${album.uuid}">
+                                <img src="${album.images[0].url}" class="album-art" loading="lazy">
+                                <div class="album-info">
+                                    <div class="album-title">${album.name}</div>
+                                    <div class="album-artist">${album.artist}</div>
+                                    <div class="links">
+                                        <a href="${spotifyLink}" target="_blank" class="btn-spotify">Spotify</a>
+                                        <a href="${appleLink}" target="_blank" class="btn-apple">Apple</a>
+                                        <a href="${ytmLink}" target="_blank" class="btn-ytm">YTM</a>
+                                        ${album.wikipediaUrl ? `<a href="${album.wikipediaUrl}" target="_blank" class="btn-wikipedia">Wiki</a>` : ''}
+                                    </div>
+                                </div>
+                                <a href="${rateLink}" target="_blank" class="rate-btn">Rate</a>
+                            </div>
+                        `;
+                    } catch (err) {
+                        console.error(`[${slug}] Failed to render album card for item:`, item, "Error:", err);
+                        return ''; // Return an empty string for the failing item instead of breaking the whole map
+                    }
+                }).join('');
+
+            } catch (err) {
+                console.error(`[${slug}] Error fetching or processing project data:`, err);
+                listContainer.innerHTML = `<p style="color:red; font-size:0.8rem;">Check project slug.</p>`;
+                updateLabel.innerText = "Fetch Failed";
+            }
+        }
+
+        function pickRandomAlbum() {
+            if (allUnratedAlbums.length === 0) return;
+            document.querySelectorAll('.album-card').forEach(c => c.classList.remove('is-selected'));
+            const randomChoice = allUnratedAlbums[Math.floor(Math.random() * allUnratedAlbums.length)];
+            const el = document.getElementById(`${randomChoice.elementId}-album-${randomChoice.album.uuid}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('is-selected');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
