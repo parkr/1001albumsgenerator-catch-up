@@ -82,7 +82,7 @@
         }
 
         .add-project-form-content.expanded {
-            max-height: 200px;
+            max-height: 500px;
         }
 
         .form-group {
@@ -502,10 +502,15 @@
                 formContent.classList.toggle('expanded');
                 if (formContent.classList.contains('expanded')) {
                     toggleBtn.textContent = '➖ Hide Form';
-                    // Focus the input when opening
-                    setTimeout(() => input.focus(), 300);
                 } else {
                     toggleBtn.textContent = '➕ Add Project';
+                }
+            });
+            
+            // Focus input after expansion animation completes
+            formContent.addEventListener('transitionend', function(event) {
+                if (event.propertyName === 'max-height' && formContent.classList.contains('expanded')) {
+                    input.focus();
                 }
             });
             
