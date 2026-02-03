@@ -104,6 +104,11 @@
             background-color: #c0392b;
         }
 
+        .empty-state {
+            text-align: center;
+            color: var(--muted);
+        }
+
         .dashboard {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -292,7 +297,7 @@
             allUnratedAlbums = [];
 
             if (projectConfigs.length === 0) {
-                root.innerHTML = '<p style="text-align:center; color: var(--muted);">Add a project to get started!</p>';
+                root.innerHTML = '<p class="empty-state">Add a project to get started!</p>';
                 return;
             }
 
@@ -312,7 +317,7 @@
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <span class="count-badge" id="count-${projectId}">--</span>
-                            <button class="remove-btn" onclick="removeProject('${config.slug}')">✕</button>
+                            <button class="remove-btn" data-slug="${config.slug}">✕</button>
                         </div>
                     </div>
                     <div class="album-list" id="list-${projectId}">
@@ -320,6 +325,11 @@
                     </div>
                 `;
                 root.appendChild(col);
+                
+                // Add event listener for remove button to avoid XSS via onclick
+                const removeBtn = col.querySelector('.remove-btn');
+                removeBtn.addEventListener('click', () => removeProject(config.slug));
+                
                 fetchProjectData(config.slug, projectId);
             });
         }
