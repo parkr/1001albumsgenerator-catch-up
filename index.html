@@ -109,6 +109,12 @@
             color: var(--muted);
         }
 
+        .badge-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
         .dashboard {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -227,13 +233,13 @@
     <div class="container">
         <header>
             <h1>Music Review HQ</h1>
-            <button class="random-btn" onclick="pickRandomAlbum()">🎲 Pick a Random Album</button>
+            <button class="random-btn" id="random-btn">🎲 Pick a Random Album</button>
         </header>
 
         <div class="add-project-form">
             <div class="form-group">
                 <input type="text" id="slug-input" placeholder="Enter project slug (e.g., test, myproject)" />
-                <button onclick="addProject()">+ Add Project</button>
+                <button id="add-project-btn">+ Add Project</button>
             </div>
         </div>
 
@@ -315,7 +321,7 @@
                             </a>
                             <span class="last-updated" id="updated-${projectId}">Syncing...</span>
                         </div>
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div class="badge-group">
                             <span class="count-badge" id="count-${projectId}">--</span>
                             <button class="remove-btn" data-slug="${config.slug}">✕</button>
                         </div>
@@ -440,11 +446,17 @@
         // Handle Enter key in the input field
         document.addEventListener('DOMContentLoaded', function() {
             const input = document.getElementById('slug-input');
+            const addBtn = document.getElementById('add-project-btn');
+            const randomBtn = document.getElementById('random-btn');
+            
             input.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     addProject();
                 }
             });
+            
+            addBtn.addEventListener('click', addProject);
+            randomBtn.addEventListener('click', pickRandomAlbum);
         });
 
         loadProjectsFromURL();
