@@ -56,6 +56,35 @@
             margin-right: auto;
         }
 
+        .add-project-toggle {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: block;
+            margin: 0 auto 20px;
+            max-width: 600px;
+        }
+
+        .add-project-toggle:hover {
+            opacity: 0.8;
+        }
+
+        .add-project-form-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .add-project-form-content.expanded {
+            max-height: 200px;
+        }
+
         .form-group {
             display: flex;
             gap: 10px;
@@ -236,10 +265,14 @@
             <button class="random-btn" id="random-btn">🎲 Pick a Random Album</button>
         </header>
 
+        <button class="add-project-toggle" id="toggle-form-btn">➕ Add Project</button>
+
         <div class="add-project-form">
-            <div class="form-group">
-                <input type="text" id="slug-input" placeholder="Enter project slug (e.g., test, myproject)" />
-                <button id="add-project-btn">+ Add Project</button>
+            <div class="add-project-form-content" id="form-content">
+                <div class="form-group">
+                    <input type="text" id="slug-input" placeholder="Enter project slug (e.g., test, myproject)" />
+                    <button id="add-project-btn">+ Add Project</button>
+                </div>
             </div>
         </div>
 
@@ -294,6 +327,14 @@
             input.value = '';
             updateURL();
             init();
+            
+            // Collapse the form after adding a project
+            const formContent = document.getElementById('form-content');
+            const toggleBtn = document.getElementById('toggle-form-btn');
+            if (formContent && formContent.classList.contains('expanded')) {
+                formContent.classList.remove('expanded');
+                toggleBtn.textContent = '➕ Add Project';
+            }
         }
 
         function removeProject(slug) {
@@ -453,6 +494,20 @@
             const input = document.getElementById('slug-input');
             const addBtn = document.getElementById('add-project-btn');
             const randomBtn = document.getElementById('random-btn');
+            const toggleBtn = document.getElementById('toggle-form-btn');
+            const formContent = document.getElementById('form-content');
+            
+            // Toggle form visibility
+            toggleBtn.addEventListener('click', function() {
+                formContent.classList.toggle('expanded');
+                if (formContent.classList.contains('expanded')) {
+                    toggleBtn.textContent = '➖ Hide Form';
+                    // Focus the input when opening
+                    setTimeout(() => input.focus(), 300);
+                } else {
+                    toggleBtn.textContent = '➕ Add Project';
+                }
+            });
             
             input.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
