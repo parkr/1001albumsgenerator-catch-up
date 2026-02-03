@@ -265,10 +265,10 @@
             <button class="random-btn" id="random-btn">🎲 Pick a Random Album</button>
         </header>
 
-        <button class="add-project-toggle" id="toggle-form-btn">➕ Add Project</button>
+        <button class="add-project-toggle" id="toggle-form-btn" aria-expanded="false" aria-controls="form-content">➕ Add Project</button>
 
         <div class="add-project-form">
-            <div class="add-project-form-content" id="form-content">
+            <div class="add-project-form-content" id="form-content" aria-hidden="true">
                 <div class="form-group">
                     <input type="text" id="slug-input" placeholder="Enter project slug (e.g., test, myproject)" />
                     <button id="add-project-btn">+ Add Project</button>
@@ -334,6 +334,8 @@
             if (formContent && formContent.classList.contains('expanded')) {
                 formContent.classList.remove('expanded');
                 toggleBtn.textContent = '➕ Add Project';
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                formContent.setAttribute('aria-hidden', 'true');
             }
         }
 
@@ -499,15 +501,19 @@
             
             // Toggle form visibility
             toggleBtn.addEventListener('click', function() {
-                formContent.classList.toggle('expanded');
-                if (formContent.classList.contains('expanded')) {
+                const isExpanded = formContent.classList.toggle('expanded');
+                if (isExpanded) {
                     toggleBtn.textContent = '➖ Hide Form';
+                    toggleBtn.setAttribute('aria-expanded', 'true');
+                    formContent.setAttribute('aria-hidden', 'false');
                 } else {
                     toggleBtn.textContent = '➕ Add Project';
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                    formContent.setAttribute('aria-hidden', 'true');
                 }
             });
             
-            // Focus input after expansion animation completes
+            // Focus input after expansion animation completes (added once)
             formContent.addEventListener('transitionend', function(event) {
                 if (event.propertyName === 'max-height' && formContent.classList.contains('expanded')) {
                     input.focus();
