@@ -409,7 +409,13 @@
                     });
                 }
 
-                const unrated = allAlbums.filter(item => !item.rating);
+                const unrated = allAlbums.filter(item => !item.rating)
+                    .sort((a, b) => {
+                        // Sort by generatedAt descending (newest first)
+                        const aDate = a.generatedAt || '';
+                        const bDate = b.generatedAt || '';
+                        return bDate.localeCompare(aDate);
+                    });
                 console.log(`[${slug}] Found ${unrated.length} unrated albums to display.`);
 
                 unrated.forEach(item => {
