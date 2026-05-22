@@ -221,7 +221,7 @@
         .album-info { flex-grow: 1; min-width: 0; }
         .album-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .album-artist { color: var(--muted); font-size: 0.8rem; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .album-status {
+        .album-current-label {
             display: inline-block;
             margin-bottom: 6px;
             padding: 2px 8px;
@@ -484,7 +484,7 @@
                                 <div class="album-info">
                                     <div class="album-title">${album.name}</div>
                                     <div class="album-artist">${album.artist}</div>
-                                    ${isCurrentAlbum ? '<div class="album-status">Current</div>' : ''}
+                                    ${isCurrentAlbum ? '<div class="album-current-label">Current</div>' : ''}
                                     <div class="links">
                                         <a href="${spotifyLink}" target="_blank" class="btn-spotify">Spotify</a>
                                         <a href="${appleLink}" target="_blank" class="btn-apple">Apple</a>
