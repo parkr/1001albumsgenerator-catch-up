@@ -406,6 +406,7 @@
                         album: data.currentAlbum,
                         rating: null,
                         uuid: null, // No history ID for the current album yet
+                        generatedAt: (new Date()).toISOString(), // Assume generated today to it's in the right order.
                     });
                 }
 
