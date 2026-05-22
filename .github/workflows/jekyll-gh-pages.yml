@@ -2,9 +2,12 @@
 name: Deploy Jekyll with GitHub Pages dependencies preinstalled
 
 on:
-  # Runs on pushes targeting the default branch
+  # Runs on pushes to any branch so branches can deploy previews
   push:
-    branches: ["main"]
+    branches: ["**"]
+
+  # Runs for pull requests so PRs can deploy previews
+  pull_request:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -49,3 +52,5 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          preview: ${{ github.ref != 'refs/heads/main' || github.event_name == 'pull_request' }}
