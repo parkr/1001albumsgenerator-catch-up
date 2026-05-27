@@ -13,7 +13,7 @@ jobs:
   deploy:
     if: >-
       github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, 'deploy: github-pages') &&
+      github.event.comment.body == 'deploy: github-pages' &&
       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR","CONTRIBUTOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     steps:
