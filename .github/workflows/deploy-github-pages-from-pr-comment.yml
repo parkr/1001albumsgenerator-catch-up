@@ -34,7 +34,7 @@ jobs:
             });
 
             if (pr.head.repo.full_name !== `${owner}/${repo}`) {
-              throw new Error("Deploy command is only allowed for branches in this repository.");
+              throw new Error("Deployment rejected: PR originates from a fork. Only branches in this repository can be deployed via PR comments.");
             }
 
             core.setOutput("ref", pr.head.ref);
