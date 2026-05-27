@@ -4,6 +4,9 @@ on:
   issue_comment:
     types: [created]
 
+env:
+  PAGES_WORKFLOW_ID: jekyll-gh-pages.yml
+
 permissions:
   actions: write
   contents: read
@@ -13,8 +16,8 @@ jobs:
   deploy:
     if: >-
       github.event.issue.pull_request &&
-      github.event.comment.body == 'deploy: github-pages' &&
-      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR","CONTRIBUTOR"]'), github.event.comment.author_association)
+      startsWith(github.event.comment.body, 'deploy: github-pages') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     steps:
       - name: Resolve PR head ref
@@ -39,6 +42,6 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner,
               repo,
-              workflow_id: "jekyll-gh-pages.yml",
+              workflow_id: process.env.PAGES_WORKFLOW_ID,
               ref: "${{ steps.pr.outputs.ref }}"
             });
