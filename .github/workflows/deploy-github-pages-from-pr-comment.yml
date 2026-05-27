@@ -5,6 +5,7 @@ on:
     types: [created]
 
 env:
+  DEPLOY_COMMAND: "deploy: github-pages"
   PAGES_WORKFLOW_ID: jekyll-gh-pages.yml
 
 permissions:
@@ -16,7 +17,7 @@ jobs:
   deploy:
     if: >-
       github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, 'deploy: github-pages') &&
+      startsWith(github.event.comment.body, env.DEPLOY_COMMAND) &&
       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     steps:
@@ -32,6 +33,12 @@ jobs:
               repo,
               pull_number
             });
+
+            if (pr.head.repo.full_name !== `${owner}/${repo}`) {
+              core.setFailed("Deploy command is only allowed for branches in this repository.");
+              return;
+            }
+
             core.setOutput("ref", pr.head.ref);
 
       - name: Trigger Pages deployment workflow
