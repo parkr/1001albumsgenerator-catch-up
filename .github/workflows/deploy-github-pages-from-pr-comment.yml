@@ -36,6 +36,8 @@ jobs:
 
       - name: Trigger Pages deployment workflow
         uses: actions/github-script@v7
+        env:
+          PR_REF: ${{ steps.pr.outputs.ref }}
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -43,5 +45,5 @@ jobs:
               owner,
               repo,
               workflow_id: process.env.PAGES_WORKFLOW_ID,
-              ref: "${{ steps.pr.outputs.ref }}"
+              ref: process.env.PR_REF
             });
